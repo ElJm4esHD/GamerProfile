@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { sqlite } from "./client.js";
 import { BACKUPS_DIR } from "./paths.js";
 
@@ -30,7 +31,9 @@ function pruneOldBackups(): void {
   }
 }
 
-// Permite `npm run db:backup` a mano; el servidor lo llamará al arrancar.
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Se ejecuta solo si el archivo se corre directo (`npm run db:backup`).
+// pathToFileURL es obligatorio en Windows: argv[1] es "C:\...", no una URL.
+const entrypoint = process.argv[1];
+if (entrypoint && import.meta.url === pathToFileURL(entrypoint).href) {
   console.log(`✔ Backup creado: ${createBackup()}`);
 }

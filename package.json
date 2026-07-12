@@ -7,6 +7,7 @@
     "backend"
   ],
   "scripts": {
+    "dev": "npm run dev -w backend",
     "db:generate": "npm run db:generate -w backend",
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
