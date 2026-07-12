@@ -1,0 +1,23 @@
+{
+  "name": "gamerprofile",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "backend"
+  ],
+  "scripts": {
+    "db:generate": "npm run db:generate -w backend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:backup": "npm run db:backup -w backend",
+    "db:studio": "npm run db:studio -w backend"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

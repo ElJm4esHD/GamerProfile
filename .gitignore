@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+*.local
+
+# La base y los backups son TUS datos, no código.
+database/app.db
+database/app.db-shm
+database/app.db-wal
+database/backups/
+
+# Las migraciones SÍ van a git: son el contrato de tu schema.
+!database/migrations/
