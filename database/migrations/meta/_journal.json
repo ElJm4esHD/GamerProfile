@@ -8,6 +8,13 @@
       "when": 1783889503627,
       "tag": "0000_cold_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1783892743081,
+      "tag": "0001_lumpy_mantis",
+      "breakpoints": true
     }
   ]
 }

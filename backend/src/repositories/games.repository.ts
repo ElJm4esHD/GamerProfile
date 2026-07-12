@@ -5,12 +5,28 @@ import { gameRatings, games } from "../db/schema.js";
 export type GameRow = InferSelectModel<typeof games>;
 export type GameRatingRow = InferSelectModel<typeof gameRatings>;
 
-/** Campos del juego que se pueden persistir (sin ratings, sin timestamps). */
+/**
+ * Campos escalares del juego que se pueden persistir.
+ * (Sin ratings ni relaciones muchos-a-muchos: esos tienen su propio camino.)
+ */
 export interface GameFields {
   name: string;
   typeId: string;
   parentGameId: string | null;
   overallOverride: number | null;
+  status: string;
+  isFavorite: boolean;
+  purchasedAt: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  releaseYear: number | null;
+  developerId: string | null;
+  publisherId: string | null;
+  difficulty: string | null;
+  playthroughs: number | null;
+  playtimeMinutes: number | null;
+  mainStoryMinutes: number | null;
+  completionistMinutes: number | null;
 }
 
 /** criterionId -> valor */
@@ -37,7 +53,7 @@ export function findAllRatingRows(): GameRatingRow[] {
 /** Inserta el juego y sus ratings de forma atómica. */
 export function insertGame(
   id: string,
-  fields: GameFields,
+  fields: Partial<GameFields> & Pick<GameFields, "name" | "typeId">,
   ratings: RatingMap,
 ): void {
   db.transaction((tx) => {
@@ -80,8 +96,5 @@ export function updateGame(
 
 /** Soft delete: la fila queda en la base, marcada. Nada se pierde. */
 export function softDeleteGame(id: string): void {
-  db.update(games)
-    .set({ deletedAt: nowIso() })
-    .where(eq(games.id, id))
-    .run();
+  db.update(games).set({ deletedAt: nowIso() }).where(eq(games.id, id)).run();
 }

@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 import {
   assignRanks,
   computeOverall,
+  DEFAULT_GAME_STATUS,
   type CreateGameInput,
+  type GameStatus,
   type GameView,
   type UpdateGameInput,
   type WeightedRating,
@@ -13,7 +15,7 @@ import * as gamesRepository from "../repositories/games.repository.js";
 import type { GameFields } from "../repositories/games.repository.js";
 
 /**
- * Arma la vista completa de todos los juegos.
+ * Arma la vista de tabla de todos los juegos.
  * El rank es global (depende de todos los juegos), así que siempre se
  * recalcula sobre el conjunto entero. Con cientos de juegos esto es
  * instantáneo; si algún día son decenas de miles, se optimiza acá y en
@@ -56,6 +58,8 @@ function buildViews(): GameView[] {
       id: row.id,
       name: row.name,
       type,
+      status: row.status as GameStatus,
+      isFavorite: row.isFavorite,
       parentGameId: row.parentGameId,
       ratings,
       overall: computeOverall(weighted, row.overallOverride),
@@ -80,16 +84,17 @@ export function listGames(): GameView[] {
 
 export function createGame(input: CreateGameInput): GameView {
   const id = randomUUID();
+  const { ratings, ...fields } = input;
 
   gamesRepository.insertGame(
     id,
     {
+      ...toPersistableFields(fields),
       name: input.name,
       typeId: input.typeId,
-      parentGameId: input.parentGameId ?? null,
-      overallOverride: input.overallOverride ?? null,
+      status: input.status ?? DEFAULT_GAME_STATUS,
     },
-    input.ratings,
+    ratings,
   );
 
   return getViewOrThrow(id);
@@ -98,17 +103,7 @@ export function createGame(input: CreateGameInput): GameView {
 export function updateGame(id: string, input: UpdateGameInput): GameView {
   if (!gamesRepository.findGameRowById(id)) throw new NotFoundError("Juego", id);
 
-  // Solo se tocan las claves realmente enviadas: `undefined` significa
-  // "no lo cambies", mientras que `null` sí es un valor válido a persistir.
-  const fields: Partial<GameFields> = {};
-  if (input.name !== undefined) fields.name = input.name;
-  if (input.typeId !== undefined) fields.typeId = input.typeId;
-  if (input.parentGameId !== undefined) fields.parentGameId = input.parentGameId;
-  if (input.overallOverride !== undefined) {
-    fields.overallOverride = input.overallOverride;
-  }
-
-  gamesRepository.updateGame(id, fields, input.ratings);
+  gamesRepository.updateGame(id, toPersistableFields(input), input.ratings);
 
   return getViewOrThrow(id);
 }
@@ -116,4 +111,40 @@ export function updateGame(id: string, input: UpdateGameInput): GameView {
 export function deleteGame(id: string): void {
   if (!gamesRepository.findGameRowById(id)) throw new NotFoundError("Juego", id);
   gamesRepository.softDeleteGame(id);
+}
+
+/**
+ * Traduce el input a columnas, copiando SOLO las claves realmente enviadas:
+ * `undefined` significa "no lo cambies", mientras que `null` sí es un valor
+ * válido a persistir. Es lo que hace posible el autosave campo por campo.
+ */
+function toPersistableFields(input: UpdateGameInput): Partial<GameFields> {
+  const keys = [
+    "name",
+    "typeId",
+    "parentGameId",
+    "overallOverride",
+    "status",
+    "isFavorite",
+    "purchasedAt",
+    "startedAt",
+    "finishedAt",
+    "releaseYear",
+    "developerId",
+    "publisherId",
+    "difficulty",
+    "playthroughs",
+    "playtimeMinutes",
+    "mainStoryMinutes",
+    "completionistMinutes",
+  ] as const satisfies readonly (keyof GameFields)[];
+
+  const fields: Partial<GameFields> = {};
+
+  for (const key of keys) {
+    const value = input[key];
+    if (value !== undefined) Object.assign(fields, { [key]: value });
+  }
+
+  return fields;
 }

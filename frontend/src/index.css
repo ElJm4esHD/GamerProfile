@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  /* Los inputs de la tabla son invisibles hasta que los tocás:
+     la tabla se lee como una tabla, no como un formulario. */
+  input,
+  select {
+    @apply bg-transparent outline-none;
+  }
+
+  *:focus-visible {
+    @apply ring-1 ring-accent ring-offset-0 rounded-sm;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

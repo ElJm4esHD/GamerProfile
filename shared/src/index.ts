@@ -1,2 +1,5 @@
 export * from "./domain/rating.js";
+export * from "./domain/status.js";
+export * from "./domain/duration.js";
+export * from "./domain/catalog.js";
 export * from "./domain/game.js";
