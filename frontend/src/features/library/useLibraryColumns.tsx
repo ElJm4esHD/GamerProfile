@@ -1,7 +1,7 @@
 import type { GameStatus, GameType, GameView, UpdateGameInput } from "@gp/shared";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
-import { EditableText } from "../games/EditableText.js";
+import { Link } from "react-router-dom";
 import { overallTone } from "../games/score-tone.js";
 import { StatusSelect } from "../games/StatusSelect.js";
 import { TypeSelect } from "../games/TypeSelect.js";
@@ -13,8 +13,8 @@ interface ColumnOptions {
 }
 
 /**
- * La biblioteca es la entidad principal: acá se administra el juego (estado,
- * favorito, alta y baja). Los puntajes se editan en Rankings.
+ * La biblioteca es la entidad principal: acá se administra el juego.
+ * El nombre lleva a la ficha, donde vive toda la información.
  */
 export function useLibraryColumns({
   gameTypes,
@@ -50,10 +50,12 @@ export function useLibraryColumns({
         accessorFn: (game) => game.name,
         meta: { align: "left" },
         cell: ({ row }) => (
-          <EditableText
-            value={row.original.name}
-            onCommit={(name) => onUpdate(row.original.id, { name })}
-          />
+          <Link
+            to={`/library/${row.original.id}`}
+            className="block rounded px-2 py-2 font-medium transition hover:bg-raised hover:text-accent"
+          >
+            {row.original.name}
+          </Link>
         ),
       },
       {

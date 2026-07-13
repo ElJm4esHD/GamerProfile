@@ -4,6 +4,7 @@ import {
   computeOverall,
   DEFAULT_GAME_STATUS,
   type CreateGameInput,
+  type GameDetail,
   type GameStatus,
   type GameView,
   type UpdateGameInput,
@@ -12,7 +13,7 @@ import {
 import { NotFoundError } from "../errors.js";
 import * as catalogRepository from "../repositories/catalog.repository.js";
 import * as gamesRepository from "../repositories/games.repository.js";
-import type { GameFields } from "../repositories/games.repository.js";
+import type { GameFields, RelationInput } from "../repositories/games.repository.js";
 
 /**
  * Arma la vista de tabla de todos los juegos.
@@ -29,9 +30,7 @@ function buildViews(): GameView[] {
       .map((criterion) => [criterion.id, criterion.weight]),
   );
 
-  const typesById = new Map(
-    catalogRepository.findAllGameTypes().map((type) => [type.id, type]),
-  );
+  const typesById = new Map(catalogRepository.findAllGameTypes().map((type) => [type.id, type]));
 
   const ratingsByGame = new Map<string, Record<string, number>>();
   for (const row of gamesRepository.findAllRatingRows()) {
@@ -48,10 +47,7 @@ function buildViews(): GameView[] {
     // Un criterio desactivado conserva su valor histórico pero no pesa
     // en el overall.
     const weighted: WeightedRating[] = Object.entries(ratings)
-      .map(([criterionId, value]) => ({
-        weight: activeWeights.get(criterionId),
-        value,
-      }))
+      .map(([criterionId, value]) => ({ weight: activeWeights.get(criterionId), value }))
       .filter((entry): entry is WeightedRating => entry.weight !== undefined);
 
     return {
@@ -82,30 +78,55 @@ export function listGames(): GameView[] {
   return buildViews();
 }
 
+/** El detalle reutiliza la vista (rank incluido) y le suma todo lo demás. */
+export function getGameDetail(id: string): GameDetail {
+  const view = getViewOrThrow(id);
+  const row = gamesRepository.findGameRowById(id);
+  if (!row) throw new NotFoundError("Juego", id);
+
+  return {
+    ...view,
+    purchasedAt: row.purchasedAt,
+    startedAt: row.startedAt,
+    finishedAt: row.finishedAt,
+    releaseYear: row.releaseYear,
+    developer: gamesRepository.findCompanyById(row.developerId),
+    publisher: gamesRepository.findCompanyById(row.publisherId),
+    difficulty: row.difficulty,
+    playthroughs: row.playthroughs,
+    playtimeMinutes: row.playtimeMinutes,
+    mainStoryMinutes: row.mainStoryMinutes,
+    completionistMinutes: row.completionistMinutes,
+    platforms: gamesRepository.findPlatformsByGame(id),
+    genres: gamesRepository.findGenresByGame(id),
+    tags: gamesRepository.findTagsByGame(id),
+  };
+}
+
 export function createGame(input: CreateGameInput): GameView {
   const id = randomUUID();
-  const { ratings, ...fields } = input;
 
   gamesRepository.insertGame(
     id,
     {
-      ...toPersistableFields(fields),
+      ...toPersistableFields(input),
       name: input.name,
       typeId: input.typeId,
       status: input.status ?? DEFAULT_GAME_STATUS,
     },
-    ratings,
+    input.ratings,
+    toRelations(input),
   );
 
   return getViewOrThrow(id);
 }
 
-export function updateGame(id: string, input: UpdateGameInput): GameView {
+export function updateGame(id: string, input: UpdateGameInput): GameDetail {
   if (!gamesRepository.findGameRowById(id)) throw new NotFoundError("Juego", id);
 
-  gamesRepository.updateGame(id, toPersistableFields(input), input.ratings);
+  gamesRepository.updateGame(id, toPersistableFields(input), input.ratings, toRelations(input));
 
-  return getViewOrThrow(id);
+  return getGameDetail(id);
 }
 
 export function deleteGame(id: string): void {
@@ -113,38 +134,48 @@ export function deleteGame(id: string): void {
   gamesRepository.softDeleteGame(id);
 }
 
+/* ── Internos ──────────────────────────────────────────────────────────── */
+
+const PERSISTABLE_KEYS = [
+  "name",
+  "typeId",
+  "parentGameId",
+  "overallOverride",
+  "status",
+  "isFavorite",
+  "purchasedAt",
+  "startedAt",
+  "finishedAt",
+  "releaseYear",
+  "developerId",
+  "publisherId",
+  "difficulty",
+  "playthroughs",
+  "playtimeMinutes",
+  "mainStoryMinutes",
+  "completionistMinutes",
+] as const satisfies readonly (keyof GameFields)[];
+
 /**
- * Traduce el input a columnas, copiando SOLO las claves realmente enviadas:
- * `undefined` significa "no lo cambies", mientras que `null` sí es un valor
- * válido a persistir. Es lo que hace posible el autosave campo por campo.
+ * Copia SOLO las claves realmente enviadas: `undefined` significa "no lo
+ * cambies", mientras que `null` sí es un valor válido a persistir. Es lo que
+ * hace posible el autosave campo por campo.
  */
 function toPersistableFields(input: UpdateGameInput): Partial<GameFields> {
-  const keys = [
-    "name",
-    "typeId",
-    "parentGameId",
-    "overallOverride",
-    "status",
-    "isFavorite",
-    "purchasedAt",
-    "startedAt",
-    "finishedAt",
-    "releaseYear",
-    "developerId",
-    "publisherId",
-    "difficulty",
-    "playthroughs",
-    "playtimeMinutes",
-    "mainStoryMinutes",
-    "completionistMinutes",
-  ] as const satisfies readonly (keyof GameFields)[];
-
   const fields: Partial<GameFields> = {};
 
-  for (const key of keys) {
+  for (const key of PERSISTABLE_KEYS) {
     const value = input[key];
     if (value !== undefined) Object.assign(fields, { [key]: value });
   }
 
   return fields;
+}
+
+function toRelations(input: UpdateGameInput): RelationInput {
+  return {
+    platformIds: input.platformIds,
+    genreIds: input.genreIds,
+    tagIds: input.tagIds,
+  };
 }

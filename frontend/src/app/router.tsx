@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { DashboardPage } from "../pages/DashboardPage.js";
+import { GameDetailPage } from "../pages/GameDetailPage.js";
 import { LibraryPage } from "../pages/LibraryPage.js";
 import { RankingsPage } from "../pages/RankingsPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: "library", element: <LibraryPage /> },
+      { path: "library/:id", element: <GameDetailPage /> },
       { path: "rankings", element: <RankingsPage /> },
       { path: "statistics", element: <StatisticsPage /> },
       { path: "settings", element: <SettingsPage /> },

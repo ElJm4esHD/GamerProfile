@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Company, Genre, Platform, Tag } from "./catalog.js";
 import { RATING_MAX, RATING_MIN } from "./rating.js";
 import { gameStatusSchema, type GameStatus } from "./status.js";
 
@@ -33,7 +34,8 @@ export const createGameSchema = z.object({
   mainStoryMinutes: minutesSchema.nullable().optional(),
   completionistMinutes: minutesSchema.nullable().optional(),
 
-  // Relaciones muchos-a-muchos: la lista que llega REEMPLAZA a la anterior
+  // Muchos-a-muchos: la lista que llega REEMPLAZA a la anterior.
+  // Mandar [] borra todas las relaciones; no mandar la clave no toca nada.
   platformIds: z.array(z.string().uuid()).optional(),
   genreIds: z.array(z.string().uuid()).optional(),
   tagIds: z.array(z.string().uuid()).optional(),
@@ -61,8 +63,7 @@ export interface Criterion {
 
 /**
  * La fila de una tabla: liviana a propósito.
- * El detalle completo de un juego (fechas, géneros, tags, horas) va a vivir en
- * `GameDetail`, que se agrega cuando exista la pantalla que lo necesita.
+ * Mandar el objeto completo para pintar 500 filas es tirar memoria.
  */
 export interface GameView {
   id: string;
@@ -77,4 +78,22 @@ export interface GameView {
   rank: number | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Todo lo que sabe la app de un juego. Solo lo pide la ficha. */
+export interface GameDetail extends GameView {
+  purchasedAt: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  releaseYear: number | null;
+  developer: Company | null;
+  publisher: Company | null;
+  difficulty: string | null;
+  playthroughs: number | null;
+  playtimeMinutes: number | null;
+  mainStoryMinutes: number | null;
+  completionistMinutes: number | null;
+  platforms: Platform[];
+  genres: Genre[];
+  tags: Tag[];
 }
