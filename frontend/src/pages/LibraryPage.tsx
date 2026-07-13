@@ -1,6 +1,8 @@
 import type { GameView, UpdateGameInput } from "@gp/shared";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AddGameButton } from "../features/library/AddGameButton.js";
+import { EMPTY_FILTERS, filterGames, hasActiveFilters } from "../features/library/filters.js";
+import { LibraryToolbar } from "../features/library/LibraryToolbar.js";
 import { useLibraryColumns } from "../features/library/useLibraryColumns.js";
 import { useGameTypes } from "../hooks/useCatalog.js";
 import { useDeleteGame, useGames, useUpdateGame } from "../hooks/useGames.js";
@@ -13,6 +15,8 @@ export function LibraryPage() {
   const gameTypes = useGameTypes();
   const updateGame = useUpdateGame();
   const deleteGame = useDeleteGame();
+
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   const handleUpdate = useCallback(
     (id: string, input: UpdateGameInput) => updateGame.mutate({ id, input }),
@@ -32,24 +36,37 @@ export function LibraryPage() {
     onDelete: handleDelete,
   });
 
+  const all = useMemo(() => games.data ?? [], [games.data]);
+  const visible = useMemo(() => filterGames(all, filters), [all, filters]);
+
   return (
-    <Page
-      eyebrow={`${games.data?.length ?? 0} entradas`}
-      title="Biblioteca"
-      actions={<AddGameButton />}
-    >
+    <Page eyebrow="Tu colección" title="Biblioteca" actions={<AddGameButton />}>
       <ErrorBanner error={updateGame.error ?? deleteGame.error} />
 
       {games.isPending ? (
         <p className="text-sm text-muted">Cargando…</p>
       ) : (
-        <DataTable
-          data={games.data ?? []}
-          columns={columns}
-          getRowId={(game) => game.id}
-          initialSorting={[{ id: "name", desc: false }]}
-          emptyMessage="Tu biblioteca está vacía. Agregá el primer juego."
-        />
+        <>
+          <LibraryToolbar
+            filters={filters}
+            gameTypes={gameTypes.data ?? []}
+            onChange={setFilters}
+            resultCount={visible.length}
+            totalCount={all.length}
+          />
+
+          <DataTable
+            data={visible}
+            columns={columns}
+            getRowId={(game) => game.id}
+            initialSorting={[{ id: "name", desc: false }]}
+            emptyMessage={
+              hasActiveFilters(filters)
+                ? "Ningún juego coincide con los filtros."
+                : "Tu biblioteca está vacía. Agregá el primer juego."
+            }
+          />
+        </>
       )}
     </Page>
   );
