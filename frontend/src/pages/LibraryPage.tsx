@@ -4,7 +4,7 @@ import { AddGameButton } from "../features/library/AddGameButton.js";
 import { EMPTY_FILTERS, filterGames, hasActiveFilters } from "../features/library/filters.js";
 import { LibraryToolbar } from "../features/library/LibraryToolbar.js";
 import { useLibraryColumns } from "../features/library/useLibraryColumns.js";
-import { useGameTypes } from "../hooks/useCatalog.js";
+import { useGameTypes, useGenres, usePlatforms } from "../hooks/useCatalog.js";
 import { useDeleteGame, useGames, useUpdateGame } from "../hooks/useGames.js";
 import { DataTable } from "../ui/DataTable.js";
 import { ErrorBanner, Page } from "../ui/Page.js";
@@ -13,6 +13,8 @@ import { ErrorBanner, Page } from "../ui/Page.js";
 export function LibraryPage() {
   const games = useGames();
   const gameTypes = useGameTypes();
+  const genres = useGenres();
+  const platforms = usePlatforms();
   const updateGame = useUpdateGame();
   const deleteGame = useDeleteGame();
 
@@ -50,6 +52,8 @@ export function LibraryPage() {
           <LibraryToolbar
             filters={filters}
             gameTypes={gameTypes.data ?? []}
+            genres={genres.data ?? []}
+            platforms={platforms.data ?? []}
             onChange={setFilters}
             resultCount={visible.length}
             totalCount={all.length}

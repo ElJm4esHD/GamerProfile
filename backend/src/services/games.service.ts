@@ -39,6 +39,13 @@ function buildViews(): GameView[] {
     ratingsByGame.set(row.gameId, bucket);
   }
 
+  const genresByGame = groupIds(
+    gamesRepository.findAllGenreLinks().map((link) => [link.gameId, link.genreId]),
+  );
+  const platformsByGame = groupIds(
+    gamesRepository.findAllPlatformLinks().map((link) => [link.gameId, link.platformId]),
+  );
+
   const unranked = gamesRepository.findAllGameRows().map((row) => {
     const ratings = ratingsByGame.get(row.id) ?? {};
     const type = typesById.get(row.typeId);
@@ -58,6 +65,8 @@ function buildViews(): GameView[] {
       isFavorite: row.isFavorite,
       parentGameId: row.parentGameId,
       ratings,
+      genreIds: genresByGame.get(row.id) ?? [],
+      platformIds: platformsByGame.get(row.id) ?? [],
       overall: computeOverall(weighted, row.overallOverride),
       overallOverride: row.overallOverride,
       createdAt: row.createdAt,
@@ -178,4 +187,16 @@ function toRelations(input: UpdateGameInput): RelationInput {
     genreIds: input.genreIds,
     tagIds: input.tagIds,
   };
+}
+
+function groupIds(pairs: readonly (readonly [string, string])[]): Map<string, string[]> {
+  const grouped = new Map<string, string[]>();
+
+  for (const [key, value] of pairs) {
+    const list = grouped.get(key) ?? [];
+    list.push(value);
+    grouped.set(key, list);
+  }
+
+  return grouped;
 }

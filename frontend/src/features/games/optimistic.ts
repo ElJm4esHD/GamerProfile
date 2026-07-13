@@ -35,6 +35,8 @@ export function applyPatch(
     parentGameId: input.parentGameId !== undefined ? input.parentGameId : game.parentGameId,
     overallOverride:
       input.overallOverride !== undefined ? input.overallOverride : game.overallOverride,
+    genreIds: input.genreIds ?? game.genreIds,
+    platformIds: input.platformIds ?? game.platformIds,
     ratings: { ...game.ratings, ...input.ratings },
   };
 }

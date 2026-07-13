@@ -63,7 +63,10 @@ export interface Criterion {
 
 /**
  * La fila de una tabla: liviana a propósito.
- * Mandar el objeto completo para pintar 500 filas es tirar memoria.
+ *
+ * Trae los IDs de géneros y plataformas (no los objetos) para poder filtrar
+ * sin pedir el detalle de cada juego. Un id es un string; el objeto completo
+ * multiplicado por 500 filas es otra cosa.
  */
 export interface GameView {
   id: string;
@@ -73,6 +76,8 @@ export interface GameView {
   isFavorite: boolean;
   parentGameId: string | null;
   ratings: Record<string, number>; // criterionId -> value
+  genreIds: string[];
+  platformIds: string[];
   overall: number | null;
   overallOverride: number | null;
   rank: number | null;

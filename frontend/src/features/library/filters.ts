@@ -4,6 +4,8 @@ export interface LibraryFilters {
   search: string;
   statuses: GameStatus[];
   typeIds: string[];
+  genreIds: string[];
+  platformIds: string[];
   onlyFavorites: boolean;
 }
 
@@ -11,6 +13,8 @@ export const EMPTY_FILTERS: LibraryFilters = {
   search: "",
   statuses: [],
   typeIds: [],
+  genreIds: [],
+  platformIds: [],
   onlyFavorites: false,
 };
 
@@ -19,6 +23,8 @@ export function hasActiveFilters(filters: LibraryFilters): boolean {
     filters.search.trim() !== "" ||
     filters.statuses.length > 0 ||
     filters.typeIds.length > 0 ||
+    filters.genreIds.length > 0 ||
+    filters.platformIds.length > 0 ||
     filters.onlyFavorites
   );
 }
@@ -29,15 +35,12 @@ export function hasActiveFilters(filters: LibraryFilters): boolean {
  * Vive fuera de React a propósito. Hoy corre en el navegador porque la
  * colección entera está en memoria y filtrar es instantáneo. El día que sean
  * miles de juegos, esto se muda al backend como cláusula WHERE y la UI ni se
- * entera: cambia quién la llama, no lo que hace.
+ * entera: cambia quién la ejecuta, no lo que hace.
  *
  * Los filtros se combinan con AND; dentro de cada filtro, los valores son OR.
- * ("Completado o Jugando" Y "es favorito").
+ * ("RPG o Terror" Y "en PC" Y "favorito").
  */
-export function filterGames(
-  games: readonly GameView[],
-  filters: LibraryFilters,
-): GameView[] {
+export function filterGames(games: readonly GameView[], filters: LibraryFilters): GameView[] {
   const needle = filters.search.trim().toLowerCase();
 
   return games.filter((game) => {
@@ -47,6 +50,15 @@ export function filterGames(
     if (filters.statuses.length > 0 && !filters.statuses.includes(game.status)) return false;
     if (filters.typeIds.length > 0 && !filters.typeIds.includes(game.type.id)) return false;
 
+    if (filters.genreIds.length > 0 && !hasAny(game.genreIds, filters.genreIds)) return false;
+    if (filters.platformIds.length > 0 && !hasAny(game.platformIds, filters.platformIds)) {
+      return false;
+    }
+
     return true;
   });
+}
+
+function hasAny(values: readonly string[], wanted: readonly string[]): boolean {
+  return values.some((value) => wanted.includes(value));
 }

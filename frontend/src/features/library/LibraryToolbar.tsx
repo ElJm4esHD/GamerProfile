@@ -1,28 +1,40 @@
-import { GAME_STATUSES, GAME_STATUS_LABELS, type GameStatus, type GameType } from "@gp/shared";
+import {
+  GAME_STATUSES,
+  GAME_STATUS_LABELS,
+  type GameStatus,
+  type GameType,
+  type Genre,
+  type Platform,
+} from "@gp/shared";
 import { EMPTY_FILTERS, hasActiveFilters, type LibraryFilters } from "./filters.js";
 
 interface LibraryToolbarProps {
   filters: LibraryFilters;
   gameTypes: readonly GameType[];
+  genres: readonly Genre[];
+  platforms: readonly Platform[];
   onChange: (filters: LibraryFilters) => void;
   resultCount: number;
   totalCount: number;
 }
 
+function toggle<T>(list: T[], value: T): T[] {
+  return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+}
+
 export function LibraryToolbar({
   filters,
   gameTypes,
+  genres,
+  platforms,
   onChange,
   resultCount,
   totalCount,
 }: LibraryToolbarProps) {
-  const toggle = <T,>(list: T[], value: T): T[] =>
-    list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
-
   const isFiltering = hasActiveFilters(filters);
 
   return (
-    <div className="mb-4 flex flex-col gap-3">
+    <div className="mb-5 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <input
           value={filters.search}
@@ -37,8 +49,6 @@ export function LibraryToolbar({
           onClick={() => onChange({ ...filters, onlyFavorites: !filters.onlyFavorites })}
         />
 
-        <span className="mx-1 h-5 w-px bg-line" />
-
         {GAME_STATUSES.map((status: GameStatus) => (
           <FilterChip
             key={status}
@@ -47,18 +57,28 @@ export function LibraryToolbar({
             onClick={() => onChange({ ...filters, statuses: toggle(filters.statuses, status) })}
           />
         ))}
-
-        <span className="mx-1 h-5 w-px bg-line" />
-
-        {gameTypes.map((type) => (
-          <FilterChip
-            key={type.id}
-            label={type.name}
-            isOn={filters.typeIds.includes(type.id)}
-            onClick={() => onChange({ ...filters, typeIds: toggle(filters.typeIds, type.id) })}
-          />
-        ))}
       </div>
+
+      <FilterRow
+        label="Tipo"
+        options={gameTypes}
+        selected={filters.typeIds}
+        onToggle={(id) => onChange({ ...filters, typeIds: toggle(filters.typeIds, id) })}
+      />
+
+      <FilterRow
+        label="Género"
+        options={genres}
+        selected={filters.genreIds}
+        onToggle={(id) => onChange({ ...filters, genreIds: toggle(filters.genreIds, id) })}
+      />
+
+      <FilterRow
+        label="Plataforma"
+        options={platforms}
+        selected={filters.platformIds}
+        onToggle={(id) => onChange({ ...filters, platformIds: toggle(filters.platformIds, id) })}
+      />
 
       <div className="flex items-center gap-3 text-xs text-muted">
         <span className="font-mono tabular-nums">
@@ -79,6 +99,38 @@ export function LibraryToolbar({
   );
 }
 
+function FilterRow({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  options: readonly { id: string; name: string }[];
+  selected: readonly string[];
+  onToggle: (id: string) => void;
+}) {
+  if (options.length === 0) return null;
+
+  return (
+    <div className="flex items-baseline gap-3">
+      <span className="w-20 shrink-0 font-mono text-xs uppercase tracking-wider text-muted/70">
+        {label}
+      </span>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((option) => (
+          <FilterChip
+            key={option.id}
+            label={option.name}
+            isOn={selected.includes(option.id)}
+            onClick={() => onToggle(option.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FilterChip({
   label,
   isOn,
@@ -92,10 +144,8 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-xs transition ${
-        isOn
-          ? "border-accent/60 bg-accent/15 text-ink"
-          : "border-line text-muted hover:text-ink"
+      className={`rounded-full border px-3 py-1 text-xs transition ${
+        isOn ? "border-accent/60 bg-accent/15 text-ink" : "border-line text-muted hover:text-ink"
       }`}
     >
       {label}

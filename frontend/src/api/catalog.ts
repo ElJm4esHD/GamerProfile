@@ -1,4 +1,13 @@
-import type { Company, Criterion, GameType, Genre, Platform, Tag } from "@gp/shared";
+import type {
+  Company,
+  CreateCriterionInput,
+  Criterion,
+  GameType,
+  Genre,
+  Platform,
+  Tag,
+  UpdateCriterionInput,
+} from "@gp/shared";
 import { api } from "./client.js";
 
 export const catalogApi = {
@@ -11,4 +20,12 @@ export const catalogApi = {
 
   createTag: (name: string) => api.post<Tag>("/tags", { name }),
   createCompany: (name: string) => api.post<Company>("/companies", { name }),
+  createPlatform: (name: string) => api.post<Platform>("/platforms", { name }),
+  createGenre: (name: string) => api.post<Genre>("/genres", { name }),
+
+  createCriterion: (input: CreateCriterionInput) => api.post<Criterion>("/criteria", input),
+  updateCriterion: (id: string, input: UpdateCriterionInput) =>
+    api.patch<Criterion>(`/criteria/${id}`, input),
+
+  backup: () => api.post<{ path: string }>("/backup", {}),
 };

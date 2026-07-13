@@ -1,3 +1,4 @@
+import type { CreateCriterionInput, UpdateCriterionInput } from "@gp/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { catalogApi } from "../api/catalog.js";
 import { queryKeys } from "../api/query-keys.js";
@@ -53,20 +54,66 @@ export function useCompanies() {
   });
 }
 
-export function useCreateTag() {
-  const queryClient = useQueryClient();
+/* ── Altas ─────────────────────────────────────────────────────────────── */
 
-  return useMutation({
-    mutationFn: (name: string) => catalogApi.createTag(name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.tags }),
-  });
+export function useCreateTag() {
+  return useCatalogMutation(catalogApi.createTag, queryKeys.tags);
 }
 
 export function useCreateCompany() {
+  return useCatalogMutation(catalogApi.createCompany, queryKeys.companies);
+}
+
+export function useCreatePlatform() {
+  return useCatalogMutation(catalogApi.createPlatform, queryKeys.platforms);
+}
+
+export function useCreateGenre() {
+  return useCatalogMutation(catalogApi.createGenre, queryKeys.genres);
+}
+
+/* ── Criterios ─────────────────────────────────────────────────────────── */
+
+/**
+ * Cambiar un criterio (peso, activo) cambia el overall de TODOS los juegos.
+ * Por eso estas mutaciones invalidan también la lista y las estadísticas.
+ */
+export function useCreateCriterion() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (name: string) => catalogApi.createCompany(name),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.companies }),
+    mutationFn: (input: CreateCriterionInput) => catalogApi.createCriterion(input),
+    onSuccess: () => invalidateScoring(queryClient),
   });
+}
+
+export function useUpdateCriterion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateCriterionInput }) =>
+      catalogApi.updateCriterion(id, input),
+    onSuccess: () => invalidateScoring(queryClient),
+  });
+}
+
+export function useBackup() {
+  return useMutation({ mutationFn: () => catalogApi.backup() });
+}
+
+/* ── Internos ──────────────────────────────────────────────────────────── */
+
+function useCatalogMutation<T>(mutationFn: (name: string) => Promise<T>, key: readonly unknown[]) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: key }),
+  });
+}
+
+function invalidateScoring(queryClient: ReturnType<typeof useQueryClient>): void {
+  queryClient.invalidateQueries({ queryKey: queryKeys.criteria });
+  queryClient.invalidateQueries({ queryKey: queryKeys.games });
+  queryClient.invalidateQueries({ queryKey: queryKeys.stats });
 }

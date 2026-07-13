@@ -34,4 +34,23 @@ export const distributionMetrics: Metric[] = [
       };
     },
   },
+
+  {
+    key: "score-distribution",
+    label: "Reparto de puntajes",
+    compute: (games) => {
+      const buckets = games
+        .map((game) => game.overall)
+        .filter((overall): overall is number => overall !== null)
+        .map((overall) => {
+          const floor = Math.min(90, Math.floor(overall / 10) * 10);
+          return `${floor}–${floor + 9}`;
+        });
+
+      return {
+        kind: "distribution",
+        entries: countBy(buckets).sort((a, b) => a.label.localeCompare(b.label)),
+      };
+    },
+  },
 ];

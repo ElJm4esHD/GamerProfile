@@ -66,6 +66,15 @@ export function findAllRatingRows(): GameRatingRow[] {
   return db.select().from(gameRatings).all();
 }
 
+/** Los vínculos de TODOS los juegos, en una query. Pedirlos de a uno sería N+1. */
+export function findAllGenreLinks(): { gameId: string; genreId: string }[] {
+  return db.select().from(gameGenres).all();
+}
+
+export function findAllPlatformLinks(): { gameId: string; platformId: string }[] {
+  return db.select().from(gamePlatforms).all();
+}
+
 export function findRatingsByGame(gameId: string): GameRatingRow[] {
   return db.select().from(gameRatings).where(eq(gameRatings.gameId, gameId)).all();
 }
