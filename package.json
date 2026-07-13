@@ -15,6 +15,7 @@
     "db:migrate": "npm run db:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:seed-catalogs": "npm run db:seed-catalogs -w backend",
+    "db:seed-sims": "npm run db:seed-sims -w backend",
     "db:backfill": "npm run db:backfill -w backend",
     "db:backup": "npm run db:backup -w backend",
     "db:studio": "npm run db:studio -w backend"

@@ -15,6 +15,13 @@
       "when": 1783892743081,
       "tag": "0001_lumpy_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1783969055739,
+      "tag": "0002_shiny_doctor_spectrum",
+      "breakpoints": true
     }
   ]
 }

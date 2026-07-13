@@ -6,9 +6,12 @@ import {
   real,
   sqliteTable,
   text,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 const now = sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`;
+
+/* ══ Biblioteca de videojuegos ═════════════════════════════════════════ */
 
 /* ── Catálogos ─────────────────────────────────────────────────────────── */
 
@@ -164,5 +167,132 @@ export const gameTags = sqliteTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.gameId, table.tagId] }),
+  }),
+);
+
+/* ══ Sim Racing ════════════════════════════════════════════════════════ */
+
+/** Los simuladores. `gameId` los vincula, opcionalmente, con la biblioteca. */
+export const simGames = sqliteTable("sim_games", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  position: integer("position").notNull().default(0),
+  gameId: text("game_id").references(() => games.id),
+});
+
+/**
+ * Circuitos y stages, scopeados por juego.
+ * Los stages de Dirt Rally no son los circuitos de Assetto Corsa: mezclarlos
+ * en una tabla global solo fusionaría cosas que no son la misma.
+ */
+export const tracks = sqliteTable(
+  "tracks",
+  {
+    id: text("id").primaryKey(),
+    simGameId: text("sim_game_id")
+      .notNull()
+      .references(() => simGames.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    kind: text("kind").notNull().default("circuit"), // 'circuit' | 'stage'
+    country: text("country"),
+    lengthM: integer("length_m"),
+  },
+  (table) => ({
+    // Escribís "Spa-Francorchamps" una vez; después se elige de la lista.
+    nameIdx: uniqueIndex("tracks_game_name_idx").on(table.simGameId, table.name),
+  }),
+);
+
+export const cars = sqliteTable(
+  "cars",
+  {
+    id: text("id").primaryKey(),
+    simGameId: text("sim_game_id")
+      .notNull()
+      .references(() => simGames.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    carClass: text("car_class"),
+  },
+  (table) => ({
+    nameIdx: uniqueIndex("cars_game_name_idx").on(table.simGameId, table.name),
+  }),
+);
+
+/**
+ * Las claves de setup. Mismo patrón que `criteria`: el setup es flexible,
+ * pero las claves están normalizadas. Agregar "Camber Front" no requiere
+ * migración; escribir "camber front" por segunda vez, tampoco lo duplica.
+ */
+export const setupParams = sqliteTable(
+  "setup_params",
+  {
+    id: text("id").primaryKey(),
+    simGameId: text("sim_game_id")
+      .notNull()
+      .references(() => simGames.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    unit: text("unit"),
+    position: integer("position").notNull().default(0),
+  },
+  (table) => ({
+    nameIdx: uniqueIndex("setup_params_game_name_idx").on(table.simGameId, table.name),
+  }),
+);
+
+/** Todos los intentos, no solo el mejor. El mejor tiempo se calcula. */
+export const lapRecords = sqliteTable(
+  "lap_records",
+  {
+    id: text("id").primaryKey(),
+    simGameId: text("sim_game_id")
+      .notNull()
+      .references(() => simGames.id),
+    trackId: text("track_id")
+      .notNull()
+      .references(() => tracks.id),
+    carId: text("car_id")
+      .notNull()
+      .references(() => cars.id),
+
+    // Milisegundos enteros. Nunca texto, nunca decimal.
+    timeMs: integer("time_ms").notNull(),
+    recordedAt: text("recorded_at").notNull(), // YYYY-MM-DD
+
+    weather: text("weather"),
+    timeOfDay: text("time_of_day"),
+    notes: text("notes"),
+
+    createdAt: text("created_at").notNull().default(now),
+    updatedAt: text("updated_at").notNull().default(now),
+    deletedAt: text("deleted_at"),
+  },
+  (table) => ({
+    comboIdx: index("laps_combo_idx").on(table.simGameId, table.trackId, table.carId),
+    deletedIdx: index("laps_deleted_idx").on(table.deletedAt),
+    timeIdx: index("laps_time_idx").on(table.timeMs),
+  }),
+);
+
+/**
+ * El setup de cada vuelta.
+ *
+ * `value` es TEXT porque el setup mezcla números (-3.5) y palabras ("Short").
+ * `valueNum` se llena solo cuando el valor es numérico: es lo que va a
+ * permitir, sin migración, preguntar "¿mi mejor vuelta con Brake Bias > 60?".
+ */
+export const lapSetupValues = sqliteTable(
+  "lap_setup_values",
+  {
+    lapId: text("lap_id")
+      .notNull()
+      .references(() => lapRecords.id, { onDelete: "cascade" }),
+    paramId: text("param_id")
+      .notNull()
+      .references(() => setupParams.id, { onDelete: "cascade" }),
+    value: text("value").notNull(),
+    valueNum: real("value_num"),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.lapId, table.paramId] }),
   }),
 );
