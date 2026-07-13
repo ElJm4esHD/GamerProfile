@@ -8,6 +8,7 @@
 export const queryKeys = {
   games: ["games"] as const,
   game: (id: string) => ["game", id] as const,
+  stats: ["stats"] as const,
   criteria: ["criteria"] as const,
   gameTypes: ["game-types"] as const,
   platforms: ["platforms"] as const,

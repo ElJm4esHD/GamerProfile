@@ -29,6 +29,7 @@ export function useUpdateGameDetail(id: string) {
     onSuccess: (detail) => {
       queryClient.setQueryData(queryKeys.game(id), detail);
       queryClient.invalidateQueries({ queryKey: queryKeys.games });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
     },
   });
 }

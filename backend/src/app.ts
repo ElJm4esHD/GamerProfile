@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { NotFoundError } from "./errors.js";
 import { registerCatalogRoutes } from "./routes/catalog.routes.js";
 import { registerGameRoutes } from "./routes/games.routes.js";
+import { registerStatsRoutes } from "./routes/stats.routes.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: { transport: { target: "pino-pretty" } } });
@@ -24,6 +25,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   registerCatalogRoutes(app);
   registerGameRoutes(app);
+  registerStatsRoutes(app);
 
   return app;
 }

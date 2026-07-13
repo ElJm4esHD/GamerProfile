@@ -3,3 +3,4 @@ export * from "./domain/status.js";
 export * from "./domain/duration.js";
 export * from "./domain/catalog.js";
 export * from "./domain/game.js";
+export * from "./domain/stats.js";

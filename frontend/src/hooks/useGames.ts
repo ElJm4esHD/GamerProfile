@@ -46,7 +46,10 @@ export function useUpdateGame() {
       }
     },
 
-    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.games }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.games });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    },
   });
 }
 
@@ -57,7 +60,10 @@ export function useCreateGame() {
     // El id lo genera el server, así que acá no hay optimismo posible:
     // esperamos la respuesta y refrescamos.
     mutationFn: (input: CreateGameInput) => gamesApi.create(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.games }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.games });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    },
   });
 }
 
@@ -87,7 +93,10 @@ export function useDeleteGame() {
       }
     },
 
-    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.games }),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.games });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    },
   });
 }
 
