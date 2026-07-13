@@ -15,6 +15,8 @@ export interface StatGameRef {
 export type StatValue =
   /** Un número suelto: cantidades, promedios. */
   | { kind: "number"; value: number | null; unit?: string }
+  /** Texto ya formateado: un tiempo de vuelta, un nombre. Con leyenda opcional. */
+  | { kind: "text"; value: string | null; caption?: string }
   /** Tiempo. Siempre en minutos; el formato es problema de la UI. */
   | { kind: "duration"; minutes: number | null }
   /** Un juego destacado, con una leyenda opcional ("42 días"). */

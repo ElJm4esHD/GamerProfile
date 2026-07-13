@@ -5,33 +5,39 @@ import type {
   CreateTrackInput,
   UpdateLapInput,
 } from "@gp/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../api/query-keys.js";
 import { simApi } from "../api/sim.js";
 
 export function useSimCatalog() {
-  return useQuery({
-    queryKey: queryKeys.simCatalog,
-    queryFn: simApi.catalog,
-    staleTime: 5 * 60 * 1000,
-  });
+  return useQuery({ queryKey: queryKeys.simCatalog, queryFn: simApi.catalog });
 }
 
 export function useLaps() {
   return useQuery({ queryKey: queryKeys.simLaps, queryFn: simApi.laps });
 }
 
+export function useSimStats() {
+  return useQuery({ queryKey: queryKeys.simStats, queryFn: simApi.stats });
+}
+
 /**
- * Crear o borrar una vuelta puede cambiar cuál es el mejor tiempo de esa
- * combinación, y por lo tanto el `gap` de todas las demás. Por eso siempre se
- * invalida la lista entera y nunca se parchea una fila sola en el cache.
+ * Cualquier cambio en las vueltas puede mover el mejor tiempo de una
+ * combinación, y con él el `gap` de todas las demás y el conteo de uso del
+ * catálogo. Por eso se invalida todo el módulo, nunca una fila suelta.
  */
+function invalidateSim(queryClient: QueryClient): void {
+  queryClient.invalidateQueries({ queryKey: queryKeys.simLaps });
+  queryClient.invalidateQueries({ queryKey: queryKeys.simCatalog });
+  queryClient.invalidateQueries({ queryKey: queryKeys.simStats });
+}
+
 export function useCreateLap() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: CreateLapInput) => simApi.createLap(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.simLaps }),
+    onSuccess: () => invalidateSim(queryClient),
   });
 }
 
@@ -41,7 +47,7 @@ export function useUpdateLap() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: UpdateLapInput }) =>
       simApi.updateLap(id, input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.simLaps }),
+    onSuccess: () => invalidateSim(queryClient),
   });
 }
 
@@ -50,7 +56,7 @@ export function useDeleteLap() {
 
   return useMutation({
     mutationFn: (id: string) => simApi.removeLap(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.simLaps }),
+    onSuccess: () => invalidateSim(queryClient),
   });
 }
 
@@ -61,7 +67,7 @@ export function useCreateTrack() {
 
   return useMutation({
     mutationFn: (input: CreateTrackInput) => simApi.createTrack(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.simCatalog }),
+    onSuccess: () => invalidateSim(queryClient),
   });
 }
 
@@ -70,7 +76,7 @@ export function useCreateCar() {
 
   return useMutation({
     mutationFn: (input: CreateCarInput) => simApi.createCar(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.simCatalog }),
+    onSuccess: () => invalidateSim(queryClient),
   });
 }
 
@@ -79,6 +85,20 @@ export function useCreateSetupParam() {
 
   return useMutation({
     mutationFn: (input: CreateSetupParamInput) => simApi.createSetupParam(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.simCatalog }),
+    onSuccess: () => invalidateSim(queryClient),
+  });
+}
+
+/** El backend responde 409 si el ítem está en uso; el mensaje se muestra tal cual. */
+export function useDeleteCatalogItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ kind, id }: { kind: "track" | "car" | "param"; id: string }) => {
+      if (kind === "track") return simApi.removeTrack(id);
+      if (kind === "car") return simApi.removeCar(id);
+      return simApi.removeSetupParam(id);
+    },
+    onSuccess: () => invalidateSim(queryClient),
   });
 }

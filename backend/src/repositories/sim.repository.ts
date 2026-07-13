@@ -111,6 +111,75 @@ function nextParamPosition(simGameId: string): number {
   return row?.next ?? 0;
 }
 
+/* ── Uso y borrado ─────────────────────────────────────────────────────── */
+
+/**
+ * Cuántas vueltas usan cada circuito / auto, y cuántas usan cada parámetro.
+ * Es lo que permite ofrecer el borrado solo cuando es seguro.
+ */
+export function countLapsByTrack(): Map<string, number> {
+  const rows = db
+    .select({ id: lapRecords.trackId, total: sql<number>`count(*)` })
+    .from(lapRecords)
+    .where(isNull(lapRecords.deletedAt))
+    .groupBy(lapRecords.trackId)
+    .all();
+
+  return new Map(rows.map((row) => [row.id, row.total]));
+}
+
+export function countLapsByCar(): Map<string, number> {
+  const rows = db
+    .select({ id: lapRecords.carId, total: sql<number>`count(*)` })
+    .from(lapRecords)
+    .where(isNull(lapRecords.deletedAt))
+    .groupBy(lapRecords.carId)
+    .all();
+
+  return new Map(rows.map((row) => [row.id, row.total]));
+}
+
+export function countUsesByParam(): Map<string, number> {
+  const rows = db
+    .select({ id: lapSetupValues.paramId, total: sql<number>`count(*)` })
+    .from(lapSetupValues)
+    .groupBy(lapSetupValues.paramId)
+    .all();
+
+  return new Map(rows.map((row) => [row.id, row.total]));
+}
+
+/**
+ * Borrado real (hard delete), no soft.
+ *
+ * Es seguro porque el service solo llama a esto cuando el uso es cero: no hay
+ * nada que perder. Un soft delete acá solo ensuciaría los selectores con
+ * entradas fantasma.
+ */
+export function deleteTrack(id: string): void {
+  db.delete(tracks).where(eq(tracks.id, id)).run();
+}
+
+export function deleteCar(id: string): void {
+  db.delete(cars).where(eq(cars.id, id)).run();
+}
+
+export function deleteSetupParam(id: string): void {
+  db.delete(setupParams).where(eq(setupParams.id, id)).run();
+}
+
+export function findTrackById(id: string) {
+  return db.select().from(tracks).where(eq(tracks.id, id)).get();
+}
+
+export function findCarById(id: string) {
+  return db.select().from(cars).where(eq(cars.id, id)).get();
+}
+
+export function findSetupParamById(id: string) {
+  return db.select().from(setupParams).where(eq(setupParams.id, id)).get();
+}
+
 /* ── Vueltas ───────────────────────────────────────────────────────────── */
 
 export function findAllLapRows(): LapRow[] {

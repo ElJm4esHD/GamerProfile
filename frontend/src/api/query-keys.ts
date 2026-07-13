@@ -18,4 +18,5 @@ export const queryKeys = {
 
   simCatalog: ["sim", "catalog"] as const,
   simLaps: ["sim", "laps"] as const,
+  simStats: ["sim", "stats"] as const,
 };

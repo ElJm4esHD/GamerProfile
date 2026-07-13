@@ -11,6 +11,8 @@ export function StatValueView({ value }: { value: StatValue }) {
   switch (value.kind) {
     case "number":
       return <NumberView value={value.value} unit={value.unit} />;
+    case "text":
+      return <TextView value={value.value} caption={value.caption} />;
     case "duration":
       return <NumberView value={value.minutes === null ? null : formatMinutes(value.minutes)} />;
     case "game":
@@ -20,6 +22,17 @@ export function StatValueView({ value }: { value: StatValue }) {
     case "distribution":
       return <DistributionView entries={value.entries} />;
   }
+}
+
+function TextView({ value, caption }: { value: string | null; caption?: string }) {
+  if (value === null) return <Empty />;
+
+  return (
+    <div>
+      <p className="font-mono text-2xl font-bold tabular-nums text-ink">{value}</p>
+      {caption && <p className="mt-1 text-xs text-muted">{caption}</p>}
+    </div>
+  );
 }
 
 function Empty() {

@@ -15,7 +15,7 @@ import type {
   TrackKind,
   UpdateLapInput,
 } from "@gp/shared";
-import { NotFoundError } from "../errors.js";
+import { ConflictError, NotFoundError } from "../errors.js";
 import * as simRepository from "../repositories/sim.repository.js";
 import type { LapFields } from "../repositories/sim.repository.js";
 
@@ -23,12 +23,78 @@ import type { LapFields } from "../repositories/sim.repository.js";
 
 /** Todo lo que la UI necesita para armar los selectores, en una sola llamada. */
 export function getCatalog(): SimCatalog {
+  const lapsByTrack = simRepository.countLapsByTrack();
+  const lapsByCar = simRepository.countLapsByCar();
+  const usesByParam = simRepository.countUsesByParam();
+
   return {
     games: simRepository.findAllSimGames(),
-    tracks: simRepository.findAllTracks().map(toTrack),
-    cars: simRepository.findAllCars(),
-    params: simRepository.findAllSetupParams(),
+    tracks: simRepository.findAllTracks().map((row) => ({
+      ...row,
+      kind: row.kind as TrackKind,
+      usageCount: lapsByTrack.get(row.id) ?? 0,
+    })),
+    cars: simRepository.findAllCars().map((row) => ({
+      ...row,
+      usageCount: lapsByCar.get(row.id) ?? 0,
+    })),
+    params: simRepository.findAllSetupParams().map((row) => ({
+      ...row,
+      usageCount: usesByParam.get(row.id) ?? 0,
+    })),
   };
+}
+
+/* ── Borrado seguro ───────────────────────────────────────────────────── */
+
+/**
+ * Solo se puede borrar lo que no está en uso.
+ *
+ * Con circuitos y autos, borrar algo con vueltas rompería la foreign key.
+ * Con los parámetros de setup es peor: `lap_setup_values` tiene ON DELETE
+ * CASCADE, así que borrar "Camber Front" borraría ese valor de TODAS las
+ * vueltas, en silencio. Preferimos negarnos y decir por qué.
+ */
+export function deleteTrack(id: string): void {
+  const track = simRepository.findTrackById(id);
+  if (!track) throw new NotFoundError("Circuito", id);
+
+  const uses = simRepository.countLapsByTrack().get(id) ?? 0;
+  if (uses > 0) {
+    throw new ConflictError(
+      `"${track.name}" tiene ${uses} ${uses === 1 ? "vuelta" : "vueltas"}. Borralas primero.`,
+    );
+  }
+
+  simRepository.deleteTrack(id);
+}
+
+export function deleteCar(id: string): void {
+  const car = simRepository.findCarById(id);
+  if (!car) throw new NotFoundError("Auto", id);
+
+  const uses = simRepository.countLapsByCar().get(id) ?? 0;
+  if (uses > 0) {
+    throw new ConflictError(
+      `"${car.name}" tiene ${uses} ${uses === 1 ? "vuelta" : "vueltas"}. Borralas primero.`,
+    );
+  }
+
+  simRepository.deleteCar(id);
+}
+
+export function deleteSetupParam(id: string): void {
+  const param = simRepository.findSetupParamById(id);
+  if (!param) throw new NotFoundError("Parámetro", id);
+
+  const uses = simRepository.countUsesByParam().get(id) ?? 0;
+  if (uses > 0) {
+    throw new ConflictError(
+      `"${param.name}" está cargado en ${uses} ${uses === 1 ? "vuelta" : "vueltas"}. Quitalo de ahí primero.`,
+    );
+  }
+
+  simRepository.deleteSetupParam(id);
 }
 
 export function createSimGame(input: CreateSimGameInput): SimGame {
@@ -50,25 +116,33 @@ export function createTrack(input: CreateTrackInput): Track {
     { country: input.country ?? null, lengthM: input.lengthM ?? null },
   );
 
-  return toTrack(row);
+  return {
+    ...row,
+    kind: row.kind as TrackKind,
+    usageCount: simRepository.countLapsByTrack().get(row.id) ?? 0,
+  };
 }
 
 export function createCar(input: CreateCarInput): Car {
-  return simRepository.findOrCreateCar({
+  const row = simRepository.findOrCreateCar({
     id: randomUUID(),
     simGameId: input.simGameId,
     name: input.name,
     carClass: input.carClass ?? null,
   });
+
+  return { ...row, usageCount: simRepository.countLapsByCar().get(row.id) ?? 0 };
 }
 
 export function createSetupParam(input: CreateSetupParamInput): SetupParam {
-  return simRepository.findOrCreateSetupParam({
+  const row = simRepository.findOrCreateSetupParam({
     id: randomUUID(),
     simGameId: input.simGameId,
     name: input.name,
     unit: input.unit ?? null,
   });
+
+  return { ...row, usageCount: simRepository.countUsesByParam().get(row.id) ?? 0 };
 }
 
 /* ── Vueltas ───────────────────────────────────────────────────────────── */
@@ -213,8 +287,4 @@ function getLapOrThrow(id: string): LapRecord {
 
 function comboKey(simGameId: string, trackId: string, carId: string): string {
   return `${simGameId}|${trackId}|${carId}`;
-}
-
-function toTrack(row: { kind: string } & Omit<Track, "kind">): Track {
-  return { ...row, kind: row.kind as TrackKind };
 }

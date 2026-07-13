@@ -9,6 +9,7 @@ import {
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import * as simService from "../services/sim.service.js";
+import { computeSimStats } from "../services/sim/sim-stats.service.js";
 
 const idParamsSchema = z.object({ id: z.string().uuid() });
 
@@ -16,6 +17,27 @@ export function registerSimRoutes(app: FastifyInstance): void {
   // Juegos, circuitos, autos y parámetros en una sola llamada: la UI necesita
   // los cuatro a la vez para armar los selectores.
   app.get("/api/sim/catalog", () => simService.getCatalog());
+
+  app.get("/api/sim/stats", () => computeSimStats());
+
+  // Solo se borra lo que no está en uso. El service devuelve 409 con el motivo.
+  app.delete("/api/sim/tracks/:id", (request, reply) => {
+    const { id } = idParamsSchema.parse(request.params);
+    simService.deleteTrack(id);
+    return reply.code(204).send();
+  });
+
+  app.delete("/api/sim/cars/:id", (request, reply) => {
+    const { id } = idParamsSchema.parse(request.params);
+    simService.deleteCar(id);
+    return reply.code(204).send();
+  });
+
+  app.delete("/api/sim/setup-params/:id", (request, reply) => {
+    const { id } = idParamsSchema.parse(request.params);
+    simService.deleteSetupParam(id);
+    return reply.code(204).send();
+  });
 
   app.post("/api/sim/games", (request, reply) => {
     const input = createSimGameSchema.parse(request.body);

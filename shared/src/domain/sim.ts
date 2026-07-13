@@ -29,6 +29,8 @@ export interface Track {
   kind: TrackKind;
   country: string | null;
   lengthM: number | null;
+  /** Cuántas vueltas lo usan. Si es > 0, no se puede borrar. */
+  usageCount: number;
 }
 
 export interface Car {
@@ -36,6 +38,7 @@ export interface Car {
   simGameId: string;
   name: string;
   carClass: string | null;
+  usageCount: number;
 }
 
 /**
@@ -51,6 +54,7 @@ export interface SetupParam {
   name: string;
   unit: string | null;
   position: number;
+  usageCount: number;
 }
 
 /** El setup de una vuelta, ya resuelto para mostrar. */

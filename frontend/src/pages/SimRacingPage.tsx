@@ -1,10 +1,20 @@
 import { formatLapTime, type CreateLapInput, type LapRecord } from "@gp/shared";
 import { useCallback, useMemo, useState } from "react";
+import { WidgetGrid } from "../features/dashboard/WidgetGrid.js";
+import { CatalogManager } from "../features/sim/CatalogManager.js";
 import { LapForm } from "../features/sim/LapForm.js";
 import { EMPTY_LAP_FILTERS, filterLaps, hasActiveLapFilters } from "../features/sim/lap-filters.js";
+import { simSpanClassFor } from "../features/sim/sim-widget-layout.js";
 import { SimToolbar } from "../features/sim/SimToolbar.js";
 import { useLapColumns } from "../features/sim/useLapColumns.js";
-import { useCreateLap, useDeleteLap, useLaps, useSimCatalog, useUpdateLap } from "../hooks/useSim.js";
+import {
+  useCreateLap,
+  useDeleteLap,
+  useLaps,
+  useSimCatalog,
+  useSimStats,
+  useUpdateLap,
+} from "../hooks/useSim.js";
 import { DataTable } from "../ui/DataTable.js";
 import { ErrorBanner, Page } from "../ui/Page.js";
 
@@ -13,6 +23,7 @@ type Editing = { mode: "closed" } | { mode: "create" } | { mode: "edit"; lap: La
 export function SimRacingPage() {
   const laps = useLaps();
   const catalog = useSimCatalog();
+  const stats = useSimStats();
 
   const createLap = useCreateLap();
   const updateLap = useUpdateLap();
@@ -20,6 +31,8 @@ export function SimRacingPage() {
 
   const [editing, setEditing] = useState<Editing>({ mode: "closed" });
   const [filters, setFilters] = useState(EMPTY_LAP_FILTERS);
+  const [managing, setManaging] = useState(false);
+  const [managedSim, setManagedSim] = useState<string | null>(null);
 
   const handleEdit = useCallback((lap: LapRecord) => setEditing({ mode: "edit", lap }), []);
 
@@ -38,15 +51,14 @@ export function SimRacingPage() {
   const visible = useMemo(() => filterLaps(all, filters), [all, filters]);
 
   const submit = (input: CreateLapInput): void => {
+    const done = { onSuccess: () => setEditing({ mode: "closed" }) };
+
     if (editing.mode === "edit") {
-      updateLap.mutate(
-        { id: editing.lap.id, input },
-        { onSuccess: () => setEditing({ mode: "closed" }) },
-      );
+      updateLap.mutate({ id: editing.lap.id, input }, done);
       return;
     }
 
-    createLap.mutate(input, { onSuccess: () => setEditing({ mode: "closed" }) });
+    createLap.mutate(input, done);
   };
 
   return (
@@ -54,18 +66,42 @@ export function SimRacingPage() {
       eyebrow="Mejores tiempos"
       title="Sim Racing"
       actions={
-        editing.mode === "closed" && (
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setEditing({ mode: "create" })}
-            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-muted transition hover:border-accent/50 hover:text-ink"
+            onClick={() => setManaging(!managing)}
+            className="rounded-lg border border-line px-4 py-2 text-sm text-muted transition hover:text-ink"
           >
-            + Agregar vuelta
+            Catálogo
           </button>
-        )
+
+          {editing.mode === "closed" && (
+            <button
+              type="button"
+              onClick={() => setEditing({ mode: "create" })}
+              className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-muted transition hover:border-accent/50 hover:text-ink"
+            >
+              + Agregar vuelta
+            </button>
+          )}
+        </div>
       }
     >
       <ErrorBanner error={createLap.error ?? updateLap.error ?? deleteLap.error} />
+
+      {stats.data && all.length > 0 && (
+        <div className="mb-8">
+          <WidgetGrid stats={stats.data} spanFor={simSpanClassFor} />
+        </div>
+      )}
+
+      {catalog.data && managing && (
+        <CatalogManager
+          catalog={catalog.data}
+          simGameId={managedSim}
+          onSelectSim={setManagedSim}
+        />
+      )}
 
       {catalog.data && editing.mode !== "closed" && (
         <LapForm

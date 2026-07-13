@@ -5,3 +5,15 @@ export class NotFoundError extends Error {
     this.name = "NotFoundError";
   }
 }
+
+/**
+ * La operación es válida pero chocaría con datos existentes.
+ * Se usa para impedir borrar algo que está en uso: la alternativa sería
+ * romper una foreign key o, peor, arrastrar historial con un CASCADE.
+ */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
