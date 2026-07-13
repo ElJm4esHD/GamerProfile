@@ -4,6 +4,7 @@ import { GameDetailPage } from "../pages/GameDetailPage.js";
 import { LibraryPage } from "../pages/LibraryPage.js";
 import { RankingsPage } from "../pages/RankingsPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
+import { SimRacingPage } from "../pages/SimRacingPage.js";
 import { StatisticsPage } from "../pages/StatisticsPage.js";
 import { AppLayout } from "./AppLayout.js";
 
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
       { path: "library", element: <LibraryPage /> },
       { path: "library/:id", element: <GameDetailPage /> },
       { path: "rankings", element: <RankingsPage /> },
+      { path: "sim-racing", element: <SimRacingPage /> },
       { path: "statistics", element: <StatisticsPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],

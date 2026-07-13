@@ -15,4 +15,7 @@ export const queryKeys = {
   genres: ["genres"] as const,
   tags: ["tags"] as const,
   companies: ["companies"] as const,
+
+  simCatalog: ["sim", "catalog"] as const,
+  simLaps: ["sim", "laps"] as const,
 };
