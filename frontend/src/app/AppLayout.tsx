@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: "/sim-racing", label: "Sim Racing" },
   { to: "/statistics", label: "Estadísticas" },
   { to: "/recommendations", label: "Recomendaciones" },
+  { to: "/wishlist", label: "Por jugar" },
   { to: "/settings", label: "Ajustes" },
 ] as const;
 

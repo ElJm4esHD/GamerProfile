@@ -7,6 +7,7 @@ import { registerCatalogRoutes } from "./routes/catalog.routes.js";
 import { registerGameRoutes } from "./routes/games.routes.js";
 import { registerSimRoutes } from "./routes/sim.routes.js";
 import { registerStatsRoutes } from "./routes/stats.routes.js";
+import { registerWishlistRoutes } from "./routes/wishlist.routes.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: { transport: { target: "pino-pretty" } } });
@@ -36,6 +37,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   registerStatsRoutes(app);
   registerSimRoutes(app);
   registerAiRoutes(app);
+  registerWishlistRoutes(app);
 
   return app;
 }

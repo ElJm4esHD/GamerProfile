@@ -1,5 +1,7 @@
-import { recommendationsSchema, type Recommendation } from "@gp/shared";
+import { randomUUID } from "node:crypto";
+import { recommendationsSchema, type Recommendation, type RecommendationBatch } from "@gp/shared";
 import { UnavailableError } from "../../errors.js";
+import * as aiRepository from "../../repositories/ai.repository.js";
 import * as statsRepository from "../../repositories/stats.repository.js";
 import { listGames } from "../games.service.js";
 import { generateJson } from "./gemini.client.js";
@@ -8,13 +10,34 @@ const TOP_GAMES = 15;
 const HOW_MANY = 6;
 
 /**
+ * La última tanda guardada. Es lo que se lee al entrar a la página: por eso
+ * cambiar de pestaña o reiniciar el server ya no la pierde.
+ */
+export function getSavedRecommendations(): RecommendationBatch {
+  const rows = aiRepository.findBatch();
+
+  return {
+    generatedAt: rows[0]?.generatedAt ?? null,
+    items: rows.map((row) => ({
+      title: row.title,
+      year: row.year,
+      genre: row.genre,
+      reason: row.reason,
+      basedOn: parseBasedOn(row.basedOn),
+    })),
+  };
+}
+
+/**
  * Recomendaciones basadas en tu biblioteca.
  *
  * El perfil se arma acá y se manda como texto. Es la única parte del proyecto
  * que sale a internet: tus títulos y puntajes viajan a Google. El resto de la
  * app sigue funcionando igual si esto está apagado.
+ *
+ * La tanda se guarda antes de devolverla: generar REEMPLAZA la anterior.
  */
-export async function recommendGames(): Promise<Recommendation[]> {
+export async function recommendGames(): Promise<RecommendationBatch> {
   const games = listGames();
 
   if (games.length < 3) {
@@ -24,8 +47,32 @@ export async function recommendGames(): Promise<Recommendation[]> {
   }
 
   const answer = await generateJson(buildPrompt(games));
+  const items = parseRecommendations(answer);
 
-  return parseRecommendations(answer);
+  aiRepository.replaceBatch(
+    items.map((item) => ({
+      id: randomUUID(),
+      fields: {
+        title: item.title,
+        year: item.year ?? null,
+        genre: item.genre ?? null,
+        reason: item.reason,
+        basedOn: JSON.stringify(item.basedOn),
+      },
+    })),
+  );
+
+  return getSavedRecommendations();
+}
+
+/** El `basedOn` viaja como JSON en la base; si se corrompe, mejor lista vacía. */
+function parseBasedOn(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
 }
 
 function buildPrompt(games: ReturnType<typeof listGames>): string {

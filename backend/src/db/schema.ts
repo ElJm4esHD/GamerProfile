@@ -296,3 +296,43 @@ export const lapSetupValues = sqliteTable(
     pk: primaryKey({ columns: [table.lapId, table.paramId] }),
   }),
 );
+
+/* == Wishlist y recomendaciones ======================================== */
+
+/**
+ * Juegos que querés jugar pero NO tenés.
+ *
+ * Tabla aparte y no un `status` más de `games`, a propósito: 'backlog'
+ * significa "lo tengo y no lo empecé". Un juego deseado no es tuyo todavía, y
+ * meterlo en `games` lo haría aparecer en la Biblioteca, en el ranking y en el
+ * promedio de puntajes. Cuando lo conseguís, se promueve a `games`.
+ */
+export const wishlistItems = sqliteTable("wishlist_items", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  year: integer("year"),
+  genre: text("genre"),
+  note: text("note"),
+  /** 'manual' | 'ai': de dónde salió. */
+  source: text("source").notNull().default("manual"),
+  createdAt: text("created_at").notNull().default(now),
+});
+
+/**
+ * La última tanda de recomendaciones.
+ *
+ * Se guardan para que no se pierdan al cambiar de página ni al reiniciar.
+ * Generar de nuevo REEMPLAZA la tanda entera: no es un historial, es la foto
+ * más reciente. Lo que quieras conservar, lo mandás a la wishlist.
+ */
+export const aiRecommendations = sqliteTable("ai_recommendations", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  year: integer("year"),
+  genre: text("genre"),
+  reason: text("reason").notNull(),
+  /** JSON: los títulos de tu colección en los que se basó. */
+  basedOn: text("based_on").notNull().default("[]"),
+  position: integer("position").notNull().default(0),
+  generatedAt: text("generated_at").notNull().default(now),
+});

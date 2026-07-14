@@ -1,5 +1,7 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import type { RecommendationBatch } from "@gp/shared";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { aiApi } from "../api/ai.js";
+import { queryKeys } from "../api/query-keys.js";
 
 export function useAiStatus() {
   return useQuery({
@@ -10,9 +12,29 @@ export function useAiStatus() {
 }
 
 /**
- * Es una mutación, no una query: cada llamada sale a internet, tarda y cuesta.
- * No se dispara sola al entrar a la página — la disparás vos.
+ * La tanda guardada. Es una query normal: se lee de la base al entrar, así que
+ * cambiar de pestaña y volver ya no borra lo que se había generado.
  */
-export function useRecommendations() {
-  return useMutation({ mutationFn: aiApi.recommendations });
+export function useSavedRecommendations() {
+  return useQuery({
+    queryKey: queryKeys.recommendations,
+    queryFn: aiApi.savedRecommendations,
+    staleTime: Infinity, // Solo cambia cuando vos generás de nuevo.
+  });
+}
+
+/**
+ * Generar sale a internet, tarda y cuesta: por eso es una mutación, no una
+ * query que se dispare sola. Al terminar, escribe la tanda nueva en el cache de
+ * la query para que la UI la muestre sin un fetch extra.
+ */
+export function useGenerateRecommendations() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: aiApi.recommendations,
+    onSuccess: (batch: RecommendationBatch) => {
+      queryClient.setQueryData(queryKeys.recommendations, batch);
+    },
+  });
 }

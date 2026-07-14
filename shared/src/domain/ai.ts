@@ -4,7 +4,7 @@ import { z } from "zod";
  * Recomendaciones generadas por IA.
  *
  * El schema no es decorativo: la respuesta de un modelo es texto, y texto
- * puede venir con cualquier forma. Se valida antes de mostrarla.
+ * puede venir con cualquier forma. Se valida antes de guardarla y mostrarla.
  */
 export const recommendationSchema = z.object({
   title: z.string().trim().min(1),
@@ -19,3 +19,12 @@ export const recommendationSchema = z.object({
 export const recommendationsSchema = z.array(recommendationSchema).max(20);
 
 export type Recommendation = z.infer<typeof recommendationSchema>;
+
+/**
+ * La tanda guardada. `generatedAt` es null si nunca generaste ninguna.
+ * Se persiste en la base: cambiar de página o reiniciar no la borra.
+ */
+export interface RecommendationBatch {
+  generatedAt: string | null;
+  items: Recommendation[];
+}

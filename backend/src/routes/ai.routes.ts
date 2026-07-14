@@ -1,6 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import { config, isGeminiEnabled } from "../config.js";
-import { recommendGames } from "../services/ai/recommendations.service.js";
+import {
+  getSavedRecommendations,
+  recommendGames,
+} from "../services/ai/recommendations.service.js";
 
 export function registerAiRoutes(app: FastifyInstance): void {
   /**
@@ -15,6 +18,10 @@ export function registerAiRoutes(app: FastifyInstance): void {
     envFilesLoaded: config.envFilesLoaded,
   }));
 
+  // GET: la última tanda guardada. Gratis e instantáneo, se lee de la base.
+  app.get("/api/ai/recommendations", () => getSavedRecommendations());
+
   // POST y no GET: cada llamada cuesta plata y tarda. No es cacheable.
+  // Reemplaza la tanda guardada y devuelve la nueva.
   app.post("/api/ai/recommendations", () => recommendGames());
 }

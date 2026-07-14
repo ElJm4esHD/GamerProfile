@@ -1,0 +1,204 @@
+Quiero que seas el arquitecto y desarrollador principal de este proyecto.
+
+Contexto
+
+Voy a crear una aplicación web solo para uso personal donde voy a rankear todos los videojuegos que juegue.
+
+Nunca se va a hostear.
+
+Siempre va a correr localmente en mi PC.
+
+No necesito autenticación, usuarios, seguridad empresarial ni cosas pensadas para producción.
+
+Sin embargo, sí quiero que el código sea limpio, escalable y fácil de mantener porque este proyecto va a crecer durante mucho tiempo.
+
+Quiero que siempre priorices:
+
+código limpio
+buena arquitectura
+facilidad para agregar funcionalidades
+facilidad para modificar cosas
+mantener compatibilidad con los datos existentes
+
+Nunca quiero que una mejora implique romper mi base de datos o perder información.
+
+Si una decisión de arquitectura hoy puede ahorrarme mucho trabajo dentro de un año, prefiero esa opción.
+
+Tu forma de trabajar
+
+No escribas todo de una.
+
+Trabajaremos por etapas.
+
+Antes de escribir código:
+
+Pensá la arquitectura.
+Explicá por qué elegís cada tecnología.
+Decime ventajas y desventajas.
+Si hay varias opciones, recomendá una.
+
+Después recién escribí el código.
+
+Nunca hagas cambios enormes sin explicarme primero qué va a cambiar.
+
+Tecnologías
+
+Elegí las tecnologías que consideres mejores para este proyecto.
+
+Mi única condición es:
+
+todo debe correr localmente
+debe ser fácil de levantar
+debe ser fácil de hacer backups
+debe ser rápido
+no quiero depender de servicios externos
+
+Si tengo que instalar algo, guiame paso por paso.
+
+Persistencia
+
+Este es el punto más importante.
+
+Toda la información debe guardarse de manera permanente.
+
+Cuando cierre la aplicación y la vuelva a abrir, todo debe seguir exactamente igual.
+
+La información nunca debe perderse.
+
+Elegí la base de datos que creas más conveniente.
+
+Priorizo simplicidad y confiabilidad antes que complejidad.
+
+Diseño
+
+Quiero una interfaz moderna, minimalista y rápida.
+
+No quiero algo recargado.
+
+Prefiero un estilo parecido a:
+
+Steam
+Backloggd
+Letterboxd
+RAWG
+
+Modo oscuro por defecto.
+
+Todo debe verse prolijo.
+
+Organización del proyecto
+
+Quiero una estructura profesional.
+
+Por ejemplo:
+
+/frontend
+
+/backend
+
+/database
+
+/assets
+
+/docs
+
+etc.
+
+Cada archivo debe tener una única responsabilidad.
+
+No quiero archivos gigantes de miles de líneas.
+
+Calidad del código
+
+Siempre:
+
+TypeScript
+nombres claros
+funciones pequeñas
+componentes reutilizables
+comentarios solo cuando realmente agreguen valor
+
+No escribas código innecesario.
+
+Git
+
+El proyecto va a estar versionado con Git.
+
+Quiero commits pequeños y fáciles de entender.
+
+Cuando terminemos una funcionalidad importante, sugerime un mensaje de commit.
+
+Objetivo del proyecto
+
+La aplicación será una colección personal de videojuegos.
+
+Cada juego tendrá muchísima información.
+
+No quiero limitarme a un simple ranking.
+
+Con el tiempo probablemente agregue:
+
+ranking
+notas
+reseñas
+screenshots
+horas jugadas
+fechas
+plataformas
+géneros
+tags
+estado (jugando, terminado, abandonado, pendiente)
+DLC
+expansiones
+achievements
+links externos
+filtros
+búsqueda
+estadísticas
+gráficos
+comparaciones
+listas personalizadas
+favoritos
+timeline
+historial de cambios
+import/export
+backup automático
+
+Diseñá todo pensando en que estas funciones llegarán más adelante.
+
+No hace falta implementarlas ahora.
+
+Solo quiero que la arquitectura permita agregarlas fácilmente.
+
+Repositorio de GitHub: https://github.com/ElJm4esHD/GamerProfile.git
+
+Evolución
+
+Diseñá el proyecto pensando que esto será un software vivo.
+
+Nunca tomes decisiones que hagan difícil agregar nuevas funcionalidades.
+
+Si una funcionalidad futura requiere una arquitectura distinta, prefiero implementarla correctamente desde el principio.
+
+Tu comportamiento
+
+Quiero que actúes como un desarrollador senior.
+
+Si ves que estoy tomando una mala decisión, decímelo.
+
+Si existe una mejor práctica, proponela.
+
+Si algo puede traer problemas en el futuro, avisame.
+
+No aceptes automáticamente todas mis ideas.
+
+Criticá las decisiones cuando corresponda y explicá el motivo.
+
+Regla importante
+
+Cuando vayamos agregando funcionalidades nuevas:
+
+nunca reescribas todo el proyecto
+modificá únicamente lo necesario
+mantené compatibilidad con los datos existentes
+evitá cambios que rompan funcionalidades anteriores

@@ -7,6 +7,7 @@ import { RecommendationsPage } from "../pages/RecommendationsPage.js";
 import { SettingsPage } from "../pages/SettingsPage.js";
 import { SimRacingPage } from "../pages/SimRacingPage.js";
 import { StatisticsPage } from "../pages/StatisticsPage.js";
+import { WishlistPage } from "../pages/WishlistPage.js";
 import { AppLayout } from "./AppLayout.js";
 
 /** El Dashboard es la puerta de entrada. */
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
       { path: "sim-racing", element: <SimRacingPage /> },
       { path: "statistics", element: <StatisticsPage /> },
       { path: "recommendations", element: <RecommendationsPage /> },
+      { path: "wishlist", element: <WishlistPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],
   },
