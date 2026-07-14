@@ -6,3 +6,4 @@ export * from "./domain/catalog.js";
 export * from "./domain/game.js";
 export * from "./domain/stats.js";
 export * from "./domain/sim.js";
+export * from "./domain/ai.js";

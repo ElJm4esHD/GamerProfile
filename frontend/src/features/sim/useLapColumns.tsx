@@ -1,4 +1,4 @@
-import { formatGap, formatLapTime, type LapRecord } from "@gp/shared";
+import { formatLapTime, type LapRecord } from "@gp/shared";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 
@@ -32,16 +32,6 @@ export function useLapColumns({ onEdit, onDelete }: ColumnOptions): ColumnDef<La
         cell: ({ row }) => (
           <span className="block text-center font-mono font-bold tabular-nums text-ink">
             {formatLapTime(row.original.timeMs)}
-          </span>
-        ),
-      },
-      {
-        id: "gap",
-        header: "Gap",
-        accessorFn: (lap) => lap.gapMs,
-        cell: ({ row }) => (
-          <span className="block text-center font-mono text-xs tabular-nums text-muted">
-            {formatGap(row.original.gapMs)}
           </span>
         ),
       },

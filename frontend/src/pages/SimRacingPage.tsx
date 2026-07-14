@@ -4,6 +4,7 @@ import { WidgetGrid } from "../features/dashboard/WidgetGrid.js";
 import { CatalogManager } from "../features/sim/CatalogManager.js";
 import { LapForm } from "../features/sim/LapForm.js";
 import { EMPTY_LAP_FILTERS, filterLaps, hasActiveLapFilters } from "../features/sim/lap-filters.js";
+import { ProgressionChart } from "../features/sim/ProgressionChart.js";
 import { simSpanClassFor } from "../features/sim/sim-widget-layout.js";
 import { SimToolbar } from "../features/sim/SimToolbar.js";
 import { useLapColumns } from "../features/sim/useLapColumns.js";
@@ -95,6 +96,10 @@ export function SimRacingPage() {
         </div>
       )}
 
+      {catalog.data && all.length > 0 && (
+        <ProgressionChart laps={all} tracks={catalog.data.tracks} />
+      )}
+
       {catalog.data && managing && (
         <CatalogManager
           catalog={catalog.data}
@@ -146,7 +151,7 @@ export function SimRacingPage() {
 
       <p className="mt-6 text-xs text-muted">
         Se guardan todos los intentos. La estrella marca el mejor tiempo de cada combinación de
-        circuito y auto, y el Gap es la diferencia contra ese mejor.
+        circuito y auto.
       </p>
     </Page>
   );

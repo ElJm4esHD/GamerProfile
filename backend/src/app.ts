@@ -1,7 +1,8 @@
 import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
 import { ZodError } from "zod";
-import { ConflictError, NotFoundError } from "./errors.js";
+import { ConflictError, NotFoundError, UnavailableError } from "./errors.js";
+import { registerAiRoutes } from "./routes/ai.routes.js";
 import { registerCatalogRoutes } from "./routes/catalog.routes.js";
 import { registerGameRoutes } from "./routes/games.routes.js";
 import { registerSimRoutes } from "./routes/sim.routes.js";
@@ -23,6 +24,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (error instanceof ConflictError) {
       return reply.code(409).send({ error: error.message });
     }
+    if (error instanceof UnavailableError) {
+      return reply.code(503).send({ error: error.message });
+    }
     app.log.error(error);
     return reply.code(500).send({ error: "Error interno" });
   });
@@ -31,6 +35,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   registerGameRoutes(app);
   registerStatsRoutes(app);
   registerSimRoutes(app);
+  registerAiRoutes(app);
 
   return app;
 }

@@ -17,3 +17,14 @@ export class ConflictError extends Error {
     this.name = "ConflictError";
   }
 }
+
+/**
+ * Un servicio externo (o su configuración) no está disponible.
+ * La app entera funciona sin él: solo se apaga la función que lo necesita.
+ */
+export class UnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnavailableError";
+  }
+}

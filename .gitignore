@@ -3,6 +3,11 @@ dist/
 .DS_Store
 *.local
 
+# Claves. NUNCA a git.
+.env
+.env.*
+!.env.example
+
 # La base y los backups son TUS datos, no código.
 database/app.db
 database/app.db-shm
