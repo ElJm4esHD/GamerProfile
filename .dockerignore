@@ -1,0 +1,26 @@
+# Lo más importante de este archivo: node_modules NUNCA entra al build context.
+# En tu PC tiene el binario de better-sqlite3 compilado para Windows; si se
+# colara en la imagen, el backend fallaría al arrancar en Linux.
+node_modules
+**/node_modules
+
+# Tus datos. Viven en el servidor y se montan como volumen, no se hornean
+# en la imagen (las migraciones entran por bind-mount desde el repo).
+database
+
+# Salidas de build: se generan dentro de la imagen.
+build
+dist
+**/dist
+
+# Claves: se pasan por env_file en runtime, nunca dentro de la imagen.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+.claude
+*.bat
+Claude.txt
+README.md

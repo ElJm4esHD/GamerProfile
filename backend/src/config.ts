@@ -22,8 +22,12 @@ for (const candidate of ENV_CANDIDATES) {
 }
 
 export const config = {
-  port: 4000,
-  host: "127.0.0.1", // Solo esta PC. La app nunca escucha hacia afuera.
+  port: Number(process.env.PORT?.trim() || 4000),
+
+  // Default: solo esta PC, la app no escucha hacia afuera. En Docker se pasa
+  // HOST=0.0.0.0, porque ahí "afuera" es apenas la red interna de compose y sin
+  // eso el contenedor sería inalcanzable incluso publicando el puerto.
+  host: process.env.HOST?.trim() || "127.0.0.1",
 
   gemini: {
     apiKey: process.env.GEMINI_API_KEY?.trim() || null,

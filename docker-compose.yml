@@ -1,0 +1,51 @@
+# GamerProfile en un servidor Ubuntu de casa, solo LAN.
+#
+# Variables (opcionales) en un archivo `.env` junto a este compose:
+#   GP_DATA_DIR  ruta de los datos en el host   (default: ./database)
+#   GP_PORT      puerto publicado en la LAN     (default: 8080)
+#   GP_UID/GP_GID  dueño de los archivos, salida de `id -u` / `id -g` (default: 1000)
+
+services:
+  backend:
+    build:
+      # Contexto en la raíz: el backend necesita el workspace `shared`.
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+
+    # La clave de Gemini se inyecta en runtime; nunca queda en la imagen.
+    env_file:
+      - backend/.env
+
+    environment:
+      # El default del código es 127.0.0.1 (correcto para tu PC). Dentro de un
+      # contenedor eso lo volvería inalcanzable incluso publicando el puerto:
+      # hay que escuchar en todas las interfaces DEL CONTENEDOR, que sigue
+      # aislado en la red interna de compose.
+      HOST: 0.0.0.0
+      PORT: "4000"
+
+    # Para que los archivos que escriba en el volumen te pertenezcan a vos y no
+    # a root. Si `id -u` no devolvió 1000, definí GP_UID/GP_GID en el .env.
+    user: "${GP_UID:-1000}:${GP_GID:-1000}"
+
+    volumes:
+      # Tus datos, fuera del control de Docker.
+      - ${GP_DATA_DIR:-./database}:/app/database
+      # Las migraciones son código versionado, no datos: vienen del repo y en
+      # solo lectura, montadas encima del volumen anterior.
+      - ./database/migrations:/app/database/migrations:ro
+
+    # Sin `ports`: al host no se expone. Solo lo alcanza nginx por la red interna.
+    expose:
+      - "4000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${GP_PORT:-8080}:80"

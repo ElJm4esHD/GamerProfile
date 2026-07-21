@@ -85,7 +85,12 @@ export function ProgressionChart({ laps, tracks }: ProgressionChartProps) {
                 fontSize: 12,
               }}
               labelStyle={{ color: "#eef3f8" }}
-              formatter={(value: number, name: string) => [formatLapTime(value), name]}
+              // Recharts tipa el valor como posiblemente indefinido (un día sin
+              // vuelta con ese auto), así que no se asume número.
+              formatter={(value, name) => [
+                typeof value === "number" ? formatLapTime(value) : "—",
+                String(name),
+              ]}
             />
 
             {progression.carNames.map((carName, index) => (
