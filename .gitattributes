@@ -1,0 +1,7 @@
+# Todo lo que entra a un contenedor Linux va con finales de línea LF, pase lo
+# que pase en el checkout de Windows. Un `#!/bin/sh` terminado en CRLF hace que
+# el contenedor falle al arrancar con un "not found" que no dice nada útil.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.conf text eol=lf
+docker-compose.yml text eol=lf
