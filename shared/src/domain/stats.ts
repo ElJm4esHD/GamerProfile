@@ -7,6 +7,8 @@
  * tocar una línea de React.
  */
 
+import type { WidgetSpan } from "./dashboard.js";
+
 export interface StatGameRef {
   id: string;
   name: string;
@@ -35,4 +37,12 @@ export interface StatResult {
   key: string;
   label: string;
   value: StatValue;
+  /**
+   * El ancho por defecto de la tarjeta, declarado por la métrica misma.
+   *
+   * Es el DEFAULT, no la última palabra: el layout guardado puede pisarlo. Vive
+   * acá para que una métrica nueva nazca con el tamaño que le corresponde sin
+   * tocar el frontend.
+   */
+  span: WidgetSpan;
 }

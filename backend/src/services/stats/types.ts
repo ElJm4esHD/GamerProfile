@@ -1,4 +1,4 @@
-import type { GameStatus, StatValue } from "@gp/shared";
+import type { GameStatus, StatValue, WidgetSpan } from "@gp/shared";
 
 /** La foto de un juego que ven las métricas. Nada más, nada menos. */
 export interface StatsGame {
@@ -24,6 +24,11 @@ export interface StatsGame {
 export interface Metric {
   key: string;
   label: string;
+  /**
+   * Cuántas columnas ocupa su tarjeta, de 1 a 4. Sin declarar, 1.
+   * Es solo el default: en el Dashboard lo podés cambiar y queda guardado.
+   */
+  span?: WidgetSpan;
   compute: (games: readonly StatsGame[]) => StatValue;
 }
 

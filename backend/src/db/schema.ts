@@ -11,6 +11,22 @@ import {
 
 const now = sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`;
 
+/* ══ Preferencias de la app ════════════════════════════════════════════ */
+
+/**
+ * Una clave, un JSON. Nada más.
+ *
+ * Deliberadamente genérica: la primera inquilina es el layout del Dashboard
+ * (`dashboard.library`), pero el orden de las columnas de una tabla o el tema
+ * entran acá sin otra migración. Cada feature valida SU forma con Zod al leer
+ * y al escribir; la tabla solo guarda texto.
+ */
+export const preferences = sqliteTable("preferences", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: text("updated_at").notNull().default(now),
+});
+
 /* ══ Biblioteca de videojuegos ═════════════════════════════════════════ */
 
 /* ── Catálogos ─────────────────────────────────────────────────────────── */

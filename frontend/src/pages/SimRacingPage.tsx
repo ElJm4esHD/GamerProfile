@@ -1,11 +1,10 @@
 import { formatLapTime, type CreateLapInput, type LapRecord } from "@gp/shared";
 import { useCallback, useMemo, useState } from "react";
-import { WidgetGrid } from "../features/dashboard/WidgetGrid.js";
+import { Dashboard } from "../features/dashboard/Dashboard.js";
 import { CatalogManager } from "../features/sim/CatalogManager.js";
 import { LapForm } from "../features/sim/LapForm.js";
 import { EMPTY_LAP_FILTERS, filterLaps, hasActiveLapFilters } from "../features/sim/lap-filters.js";
 import { ProgressionChart } from "../features/sim/ProgressionChart.js";
-import { simSpanClassFor } from "../features/sim/sim-widget-layout.js";
 import { SimToolbar } from "../features/sim/SimToolbar.js";
 import { useLapColumns } from "../features/sim/useLapColumns.js";
 import {
@@ -33,6 +32,7 @@ export function SimRacingPage() {
   const [editing, setEditing] = useState<Editing>({ mode: "closed" });
   const [filters, setFilters] = useState(EMPTY_LAP_FILTERS);
   const [managing, setManaging] = useState(false);
+  const [isEditingBoard, setIsEditingBoard] = useState(false);
   const [managedSim, setManagedSim] = useState<string | null>(null);
 
   const handleEdit = useCallback((lap: LapRecord) => setEditing({ mode: "edit", lap }), []);
@@ -68,6 +68,20 @@ export function SimRacingPage() {
       title="Sim Racing"
       actions={
         <div className="flex items-center gap-2">
+          {stats.data && all.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsEditingBoard(!isEditingBoard)}
+              className={`rounded-lg border px-4 py-2 text-sm transition ${
+                isEditingBoard
+                  ? "border-accent/60 bg-accent/15 font-medium text-ink"
+                  : "border-line text-muted hover:text-ink"
+              }`}
+            >
+              {isEditingBoard ? "Listo" : "Personalizar"}
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setManaging(!managing)}
@@ -92,7 +106,7 @@ export function SimRacingPage() {
 
       {stats.data && all.length > 0 && (
         <div className="mb-8">
-          <WidgetGrid stats={stats.data} spanFor={simSpanClassFor} />
+          <Dashboard board="sim" stats={stats.data} isEditing={isEditingBoard} />
         </div>
       )}
 

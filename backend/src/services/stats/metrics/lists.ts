@@ -6,6 +6,7 @@ export const listMetrics: Metric[] = [
   {
     key: "recently-added",
     label: "Agregados recientemente",
+    span: 2,
     compute: (games) => ({
       kind: "gameList",
       games: [...games]
@@ -18,6 +19,7 @@ export const listMetrics: Metric[] = [
   {
     key: "favorites",
     label: "Favoritos",
+    span: 2,
     compute: (games) => ({
       kind: "gameList",
       games: games
@@ -31,6 +33,7 @@ export const listMetrics: Metric[] = [
   {
     key: "playing-now",
     label: "Jugando ahora",
+    span: 2,
     compute: (games) => ({
       kind: "gameList",
       games: games.filter((game) => game.status === "playing").map(toRef),

@@ -1,4 +1,4 @@
-import type { StatResult } from "@gp/shared";
+import { DEFAULT_WIDGET_SPAN, type StatResult } from "@gp/shared";
 import * as gamesRepository from "../../repositories/games.repository.js";
 import * as statsRepository from "../../repositories/stats.repository.js";
 import { listGames } from "../games.service.js";
@@ -42,6 +42,7 @@ export function computeStats(): StatResult[] {
   return METRICS.map((metric) => ({
     key: metric.key,
     label: metric.label,
+    span: metric.span ?? DEFAULT_WIDGET_SPAN,
     value: metric.compute(games),
   }));
 }

@@ -4,6 +4,7 @@ export const distributionMetrics: Metric[] = [
   {
     key: "genre-distribution",
     label: "Géneros",
+    span: 3,
     compute: (games) => ({
       kind: "distribution",
       entries: countBy(games.flatMap((game) => game.genres)),
@@ -13,6 +14,7 @@ export const distributionMetrics: Metric[] = [
   {
     key: "platform-distribution",
     label: "Plataformas",
+    span: 3,
     compute: (games) => ({
       kind: "distribution",
       entries: countBy(games.flatMap((game) => game.platforms)),
@@ -22,6 +24,7 @@ export const distributionMetrics: Metric[] = [
   {
     key: "completed-by-year",
     label: "Terminados por año",
+    span: 3,
     compute: (games) => {
       const years = games
         .filter((game) => game.finishedAt !== null)

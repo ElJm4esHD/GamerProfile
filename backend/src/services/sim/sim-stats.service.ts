@@ -1,4 +1,11 @@
-import { formatLapTime, type LapRecord, type StatResult, type StatValue } from "@gp/shared";
+import {
+  DEFAULT_WIDGET_SPAN,
+  formatLapTime,
+  type LapRecord,
+  type StatResult,
+  type StatValue,
+  type WidgetSpan,
+} from "@gp/shared";
 import { listLaps } from "../sim.service.js";
 
 /**
@@ -12,6 +19,8 @@ import { listLaps } from "../sim.service.js";
 interface SimMetric {
   key: string;
   label: string;
+  /** Ancho por defecto de la tarjeta, de 1 a 4. Sin declarar, 1. */
+  span?: WidgetSpan;
   compute: (laps: readonly LapRecord[]) => StatValue;
 }
 
@@ -107,6 +116,7 @@ const METRICS: readonly SimMetric[] = [
   {
     key: "sim-laps-by-sim",
     label: "Vueltas por simulador",
+    span: 2,
     compute: (laps) => ({
       kind: "distribution",
       entries: countBy(laps.map((lap) => lap.simGame.name)),
@@ -116,6 +126,7 @@ const METRICS: readonly SimMetric[] = [
   {
     key: "sim-laps-by-track",
     label: "Vueltas por circuito",
+    span: 2,
     compute: (laps) => ({
       kind: "distribution",
       entries: countBy(laps.map((lap) => lap.track.name)),
@@ -125,6 +136,7 @@ const METRICS: readonly SimMetric[] = [
   {
     key: "sim-laps-by-month",
     label: "Vueltas por mes",
+    span: 4,
     compute: (laps) => ({
       kind: "distribution",
       // Cronológico: una serie temporal ordenada por cantidad no se puede leer.
@@ -141,6 +153,7 @@ export function computeSimStats(): StatResult[] {
   return METRICS.map((metric) => ({
     key: metric.key,
     label: metric.label,
+    span: metric.span ?? DEFAULT_WIDGET_SPAN,
     value: metric.compute(laps),
   }));
 }

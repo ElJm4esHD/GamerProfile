@@ -5,6 +5,7 @@ export * from "./domain/laptime.js";
 export * from "./domain/catalog.js";
 export * from "./domain/game.js";
 export * from "./domain/stats.js";
+export * from "./domain/dashboard.js";
 export * from "./domain/sim.js";
 export * from "./domain/ai.js";
 export * from "./domain/wishlist.js";
