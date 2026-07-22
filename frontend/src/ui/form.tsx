@@ -50,10 +50,12 @@ export function TextField({
   value,
   onCommit,
   placeholder,
+  autoFocus,
 }: {
   value: string | null;
   onCommit: (value: string | null) => void;
   placeholder?: string;
+  autoFocus?: boolean;
 }) {
   const [draft, setDraft] = useDraft(value, (v) => v ?? "");
 
@@ -67,6 +69,7 @@ export function TextField({
     <input
       value={draft}
       placeholder={placeholder}
+      autoFocus={autoFocus}
       onChange={(event) => setDraft(event.target.value)}
       onBlur={commit}
       onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}

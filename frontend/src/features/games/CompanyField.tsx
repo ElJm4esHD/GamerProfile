@@ -4,7 +4,8 @@ import { useCreateCompany } from "../../hooks/useCatalog.js";
 import { SelectField } from "../../ui/form.js";
 
 interface CompanyFieldProps {
-  value: Company | null;
+  /** El id de la empresa elegida, o null. */
+  value: string | null;
   companies: readonly Company[];
   onCommit: (companyId: string | null) => void;
 }
@@ -29,12 +30,7 @@ export function CompanyField({ value, companies, onCommit }: CompanyFieldProps) 
 
   return (
     <div className="flex flex-col gap-1.5">
-      <SelectField
-        value={value?.id ?? null}
-        options={companies}
-        onCommit={onCommit}
-        emptyLabel="—"
-      />
+      <SelectField value={value} options={companies} onCommit={onCommit} emptyLabel="—" />
 
       <div className="flex gap-1.5">
         <input

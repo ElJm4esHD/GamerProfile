@@ -1,20 +1,17 @@
-import type { Tag } from "@gp/shared";
 import { useState } from "react";
 import { useCreateTag, useTags } from "../../hooks/useCatalog.js";
 import { ChipSelect } from "../../ui/ChipSelect.js";
 
 interface TagFieldProps {
-  selected: readonly Tag[];
+  selectedIds: readonly string[];
   onCommit: (tagIds: string[]) => void;
 }
 
 /** Los tags los inventás vos: se crean escribiendo. */
-export function TagField({ selected, onCommit }: TagFieldProps) {
+export function TagField({ selectedIds, onCommit }: TagFieldProps) {
   const tags = useTags();
   const createTag = useCreateTag();
   const [draft, setDraft] = useState("");
-
-  const selectedIds = selected.map((tag) => tag.id);
 
   const create = async (): Promise<void> => {
     const name = draft.trim();
